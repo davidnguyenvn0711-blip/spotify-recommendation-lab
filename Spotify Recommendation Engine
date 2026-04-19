@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Spotify Thinks — MIS 432 AI in Business</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:         #191414;
+  --bg2:        #1e1919;
+  --bg3:        #242020;
+  --bg4:        #2a2626;
+  --green:      #1DB954;
+  --green-lo:   rgba(29,185,84,0.12);
+  --green-mid:  rgba(29,185,84,0.25);
+  --yellow:     #f5a623;
+  --red:        #e8444d;
+  --white:      #ffffff;
+  --muted:      #b3b3b3;
+  --faint:      #535353;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.12);
+  --syne:       'Syne', sans-serif;
+  --mono:       'DM Mono', monospace;
+  --lora:       'Lora', serif;
+  --playbar-h:  72px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:var(--syne);
+  min-height:100vh;
+  overflow-x:hidden;
+  padding-bottom:calc(var(--playbar-h) + 24px);
+}
+
+/* grain */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:.5;
+}
+
+/* ─── NAV ─────────────────────────────────────────────── */
+nav{
+  position:sticky;top:0;z-index:90;
+  background:rgba(25,20,20,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:0;
+  padding:0 32px;
+  height:56px;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  font-weight:800;font-size:.9rem;letter-spacing:-.02em;
+  margin-right:32px;text-decoration:none;color:var(--white);
+}
+.nav-logo-dot{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.nav-logo-dot svg{width:16px;height:16px;fill:#000;}
+.nav-links{display:flex;gap:4px;flex:1;}
+.nav-links a{
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);
+  padding:6px 12px;border-radius:6px;text-decoration:none;
+  transition:color .2s,background .2s;
+}
+.nav-links a:hover{color:var(--white);background:rgba(255,255,255,.05);}
+.nav-links a.active{color:var(--green);}
+.nav-badge{
+  margin-left:auto;font-family:var(--mono);font-size:.6rem;
+  letter-spacing:.1em;color:var(--green);
+  background:var(--green-lo);border:1px solid var(--green-mid);
+  padding:4px 10px;border-radius:20px;white-space:nowrap;
+}
+
+/* ─── HERO ────────────────────────────────────────────── */
+.hero{
+  position:relative;z-index:1;
+  padding:80px 32px 64px;
+  max-width:900px;margin:0 auto;
+  text-align:center;
+}
+.hero-eyebrow{
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--green);
+  margin-bottom:20px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{
+  content:'';width:40px;height:1px;background:var(--green-mid);
+}
+.hero h1{
+  font-size:clamp(2.4rem,6vw,4.2rem);
+  font-weight:800;letter-spacing:-.03em;line-height:1.05;
+  margin-bottom:20px;
+}
+.hero h1 em{
+  font-style:normal;color:var(--green);
+}
+.hero-sub{
+  font-family:var(--lora);font-style:italic;
+  font-size:1.1rem;color:var(--muted);line-height:1.7;
+  max-width:640px;margin:0 auto 32px;
+}
+.hero-meta{
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;
+  color:var(--faint);
+}
+.hero-meta span{color:var(--muted);}
+
+/* ─── SECTION WRAPPER ─────────────────────────────────── */
+.section{
+  position:relative;z-index:1;
+  max-width:960px;margin:0 auto;
+  padding:64px 32px;
+}
+.section+.section{
+  border-top:1px solid var(--border);
+}
+.section-tag{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--green);
+  margin-bottom:16px;
+}
+.section-h2{
+  font-size:clamp(1.6rem,3.5vw,2.4rem);
+  font-weight:800;letter-spacing:-.025em;line-height:1.1;
+  margin-bottom:24px;
+}
+.section-lead{
+  font-family:var(--lora);font-style:italic;
+  font-size:1.05rem;color:var(--muted);line-height:1.75;
+  margin-bottom:32px;max-width:680px;
+}
+.prose{
+  font-size:.95rem;line-height:1.8;color:var(--muted);
+  max-width:700px;
+}
+.prose p{margin-bottom:1.2em;}
+.prose strong{color:var(--white);font-weight:700;}
+
+/* ─── CONCEPT CARDS ───────────────────────────────────── */
+.concepts-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;margin-top:32px;
+}
+.concept-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;padding:24px;
+  transition:border-color .2s,transform .2s;
+  animation:fadeUp .5s ease both;
+}
+.concept-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.concept-card:nth-child(1){animation-delay:.05s;}
+.concept-card:nth-child(2){animation-delay:.1s;}
+.concept-card:nth-child(3){animation-delay:.15s;}
+.concept-card:nth-child(4){animation-delay:.2s;}
+.concept-card:nth-child(5){animation-delay:.25s;}
+.concept-card:nth-child(6){animation-delay:.3s;}
+.concept-card:nth-child(7){animation-delay:.35s;}
+.concept-card:nth-child(8){animation-delay:.4s;}
+.concept-icon{font-size:1.5rem;margin-bottom:12px;}
+.concept-title{
+  font-size:.88rem;font-weight:700;margin-bottom:8px;
+  letter-spacing:-.01em;
+}
+.concept-body{
+  font-size:.78rem;color:var(--muted);line-height:1.65;
+  font-family:var(--lora);font-style:italic;
+}
+
+/* ─── STAT CALLOUTS ───────────────────────────────────── */
+.stats-row{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:16px;margin:32px 0;
+}
+.stat-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;padding:24px 20px;text-align:center;
+}
+.stat-num{
+  font-size:2.4rem;font-weight:800;letter-spacing:-.04em;
+  color:var(--green);display:block;line-height:1;margin-bottom:8px;
+}
+.stat-label{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);
+}
+
+/* ─── LESSON CARDS ────────────────────────────────────── */
+.lessons{display:flex;flex-direction:column;gap:16px;margin-top:32px;}
+.lesson{
+  background:var(--bg3);border:1px solid var(--border);
+  border-left:3px solid var(--green);
+  border-radius:0 14px 14px 0;
+  padding:20px 24px;
+  display:flex;gap:16px;align-items:flex-start;
+}
+.lesson-num{
+  font-family:var(--mono);font-size:.65rem;color:var(--green);
+  flex-shrink:0;margin-top:3px;
+}
+.lesson-text strong{
+  font-size:.9rem;font-weight:700;display:block;margin-bottom:4px;
+}
+.lesson-text p{font-size:.82rem;color:var(--muted);line-height:1.6;}
+
+/* ─── DIVIDER ─────────────────────────────────────────── */
+.divider{
+  position:relative;z-index:1;
+  text-align:center;padding:48px 32px;
+  background:linear-gradient(180deg,transparent,rgba(29,185,84,.04),transparent);
+}
+.divider-label{
+  display:inline-block;
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--green);
+  background:var(--bg);border:1px solid var(--green-mid);
+  padding:8px 20px;border-radius:30px;
+}
+
+/* ════════════════════════════════════════════════════════
+   PART 2 — THE LIVE SYSTEM
+   ════════════════════════════════════════════════════════ */
+#system{
+  position:relative;z-index:1;
+  max-width:1320px;margin:0 auto;
+  padding:48px 32px 32px;
+}
+.system-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:32px;flex-wrap:wrap;gap:16px;
+}
+.system-header-left .system-tag{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--green);margin-bottom:8px;
+}
+.system-header-left h2{
+  font-size:clamp(1.4rem,3vw,2rem);font-weight:800;letter-spacing:-.025em;
+}
+.system-header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+/* Spotify Connect button */
+.spotify-connect-btn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--green);color:#000;
+  border:none;border-radius:30px;
+  font-family:var(--syne);font-weight:700;font-size:.78rem;
+  padding:9px 18px;cursor:pointer;
+  transition:all .2s;letter-spacing:.01em;
+}
+.spotify-connect-btn svg{width:16px;height:16px;fill:#000;}
+.spotify-connect-btn:hover{background:#22d660;transform:scale(1.03);}
+.spotify-connect-btn.connected{background:var(--bg3);color:var(--green);border:1px solid var(--green-mid);}
+
+/* Two-column system layout */
+.system-grid{
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:24px;align-items:start;
+}
+
+/* ─── CATALOG ─────────────────────────────────────────── */
+.catalog-label{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.catalog-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.catalog-list{display:flex;flex-direction:column;gap:6px;}
+
+.song-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;
+  transition:background .18s,border-color .18s,transform .12s;
+  animation:slideIn .4s ease both;
+}
+.song-card:nth-child(1){animation-delay:.03s}
+.song-card:nth-child(2){animation-delay:.06s}
+.song-card:nth-child(3){animation-delay:.09s}
+.song-card:nth-child(4){animation-delay:.12s}
+.song-card:nth-child(5){animation-delay:.15s}
+.song-card:nth-child(6){animation-delay:.18s}
+.song-card:nth-child(7){animation-delay:.21s}
+.song-card:nth-child(8){animation-delay:.24s}
+.song-card:nth-child(9){animation-delay:.27s}
+.song-card:nth-child(10){animation-delay:.30s}
+.song-card:nth-child(11){animation-delay:.33s}
+.song-card:nth-child(12){animation-delay:.36s}
+.song-card:nth-child(13){animation-delay:.39s}
+.song-card:nth-child(14){animation-delay:.42s}
+.song-card:nth-child(15){animation-delay:.45s}
+
+.song-card:hover{background:var(--bg4);border-color:var(--border2);transform:translateX(2px);}
+.song-card.state-replay{border-left:3px solid var(--green);}
+.song-card.state-play{border-left:3px solid var(--yellow);}
+.song-card.state-skip{border-left:3px solid var(--red);}
+.song-card.now-playing{border-color:var(--green);background:rgba(29,185,84,.06);}
+
+.art{
+  width:40px;height:40px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1rem;color:rgba(0,0,0,.7);
+  position:relative;
+}
+.art .playing-anim{
+  position:absolute;inset:0;border-radius:6px;
+  background:rgba(0,0,0,.5);
+  display:none;align-items:center;justify-content:center;
+  gap:2px;
+}
+.song-card.now-playing .playing-anim{display:flex;}
+.playing-anim span{
+  display:block;width:3px;background:var(--green);border-radius:2px;
+  animation:bar .8s ease-in-out infinite;
+}
+.playing-anim span:nth-child(1){height:8px;animation-delay:0s;}
+.playing-anim span:nth-child(2){height:14px;animation-delay:.15s;}
+.playing-anim span:nth-child(3){height:10px;animation-delay:.3s;}
+@keyframes bar{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+
+.song-info{flex:1;min-width:0;}
+.song-title{
+  font-size:.85rem;font-weight:700;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.song-artist{
+  font-size:.72rem;color:var(--muted);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.genre-pill{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.04em;
+  border:1px solid var(--border);border-radius:20px;
+  padding:2px 7px;color:var(--faint);white-space:nowrap;flex-shrink:0;
+}
+.btn-trio{display:flex;gap:5px;flex-shrink:0;}
+.btn{
+  border:none;border-radius:6px;cursor:pointer;
+  font-family:var(--mono);font-size:.62rem;font-weight:500;
+  padding:6px 9px;transition:all .14s;letter-spacing:.03em;
+}
+.btn-s{background:rgba(232,68,77,.14);color:var(--red);border:1px solid rgba(232,68,77,.28);}
+.btn-p{background:rgba(245,166,35,.14);color:var(--yellow);border:1px solid rgba(245,166,35,.28);}
+.btn-r{background:rgba(29,185,84,.14);color:var(--green);border:1px solid rgba(29,185,84,.28);}
+.btn-s:hover{background:rgba(232,68,77,.28);transform:scale(1.06);}
+.btn-p:hover{background:rgba(245,166,35,.28);transform:scale(1.06);}
+.btn-r:hover{background:rgba(29,185,84,.28);transform:scale(1.06);}
+.btn-s.active{background:var(--red);color:#fff;}
+.btn-p.active{background:var(--yellow);color:#000;}
+.btn-r.active{background:var(--green);color:#000;}
+
+/* ─── RIGHT COLUMN ────────────────────────────────────── */
+.right-col{display:flex;flex-direction:column;gap:16px;}
+.right-col .panel-label{
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);
+  margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.right-col .panel-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Neighbors */
+.neighbors-panel{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;padding:16px;
+}
+.neighbor-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.neighbor-row:last-child{margin-bottom:0;}
+.n-label{font-family:var(--mono);font-size:.63rem;color:var(--muted);width:52px;flex-shrink:0;}
+.n-track{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.n-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s ease;}
+.n-score{font-family:var(--mono);font-size:.63rem;color:var(--green);width:32px;text-align:right;flex-shrink:0;}
+
+/* Reco cards */
+.reco-panel{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.reco-empty{
+  padding:32px 16px;text-align:center;color:var(--faint);
+  font-size:.8rem;line-height:1.7;
+}
+.reco-empty .ei{font-size:1.8rem;display:block;margin-bottom:10px;opacity:.4;}
+.reco-card{
+  display:flex;align-items:center;gap:10px;
+  padding:10px;border-radius:8px;margin-bottom:6px;
+  transition:background .18s;animation:fadeUp .35s ease both;
+}
+.reco-card:last-child{margin-bottom:0;}
+.reco-card:hover{background:var(--bg4);}
+.reco-rank{font-family:var(--mono);font-size:.68rem;color:var(--green);width:16px;text-align:center;flex-shrink:0;}
+.reco-art{width:34px;height:34px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:rgba(0,0,0,.7);}
+.reco-info{flex:1;min-width:0;}
+.reco-title{font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.reco-artist{font-size:.68rem;color:var(--muted);margin-top:1px;}
+.reco-score-col{text-align:right;flex-shrink:0;}
+.reco-score{font-family:var(--mono);font-size:.68rem;color:var(--green);}
+.reco-bar{width:36px;height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden;}
+.reco-bar-fill{height:100%;background:var(--green);border-radius:2px;}
+
+/* Stats pills */
+.stats-pills{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+}
+.pill{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;padding:12px 8px;text-align:center;
+}
+.pill-num{font-family:var(--mono);font-size:1.3rem;font-weight:500;display:block;line-height:1;}
+.pill-num.g{color:var(--green);}
+.pill-num.y{color:var(--yellow);}
+.pill-num.r{color:var(--red);}
+.pill-lbl{font-family:var(--mono);font-size:.55rem;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-top:3px;}
+
+/* Log */
+.log-box{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;height:180px;overflow-y:auto;
+  padding:10px;font-family:var(--mono);font-size:.63rem;
+  scrollbar-width:thin;scrollbar-color:var(--faint) transparent;
+}
+.log-empty{color:var(--faint);text-align:center;padding:28px 12px;line-height:1.7;}
+.log-line{
+  padding:5px 7px;border-radius:5px;margin-bottom:3px;
+  animation:logIn .18s ease;border-left:2px solid transparent;
+  line-height:1.4;
+}
+.log-line.replay{background:rgba(29,185,84,.07);border-left-color:var(--green);}
+.log-line.play{background:rgba(245,166,35,.07);border-left-color:var(--yellow);}
+.log-line.skip{background:rgba(232,68,77,.07);border-left-color:var(--red);}
+.lt{color:var(--faint);}
+.la{font-weight:500;}
+.la.replay{color:var(--green);}
+.la.play{color:var(--yellow);}
+.la.skip{color:var(--red);}
+.ls{color:var(--muted);}
+.lsc{color:var(--faint);}
+
+/* Wrapped button */
+#wrappedBtn{
+  width:100%;padding:13px;border-radius:30px;border:none;
+  font-family:var(--syne);font-size:.82rem;font-weight:800;
+  cursor:not-allowed;
+  background:var(--bg3);color:var(--faint);
+  border:1px solid var(--border);
+  transition:all .3s ease;letter-spacing:.01em;
+}
+#wrappedBtn.active{
+  background:var(--green);color:#000;cursor:pointer;
+  border-color:var(--green);
+  box-shadow:0 0 28px rgba(29,185,84,.3);
+}
+#wrappedBtn.active:hover{background:#22d660;transform:scale(1.02);}
+.wrapped-hint{
+  display:block;font-family:var(--mono);font-size:.55rem;
+  font-weight:400;margin-top:3px;opacity:.65;letter-spacing:.06em;
+}
+
+/* ─── PLAYBAR ─────────────────────────────────────────── */
+#playbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:95;
+  height:var(--playbar-h);
+  background:rgba(20,16,16,.97);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  display:flex;align-items:center;
+  padding:0 24px;gap:20px;
+}
+.pb-art{
+  width:44px;height:44px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1.1rem;color:rgba(0,0,0,.7);
+}
+.pb-info{flex:1;min-width:0;}
+.pb-title{font-size:.85rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pb-artist{font-size:.72rem;color:var(--muted);margin-top:1px;}
+.pb-idle{font-family:var(--mono);font-size:.68rem;color:var(--faint);}
+.pb-controls{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.pb-btn{
+  border:none;border-radius:50%;cursor:pointer;
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+  background:var(--bg3);color:var(--muted);
+}
+.pb-btn:hover{background:var(--bg4);color:var(--white);}
+.pb-btn.play-pause{
+  background:var(--white);color:#000;width:40px;height:40px;
+}
+.pb-btn.play-pause:hover{background:#e8e8e8;transform:scale(1.05);}
+.pb-btn svg{width:16px;height:16px;fill:currentColor;}
+.pb-play-pause-btn .pb-btn.play-pause svg{width:14px;height:14px;}
+.pb-mode{
+  margin-left:8px;font-family:var(--mono);font-size:.6rem;
+  color:var(--faint);letter-spacing:.06em;
+}
+.pb-mode.premium{color:var(--green);}
+
+/* ─── WRAPPED MODAL ───────────────────────────────────── */
+.woverlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.9);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
+}
+.woverlay.vis{opacity:1;pointer-events:all;}
+.wpanel{
+  background:#0d0b0b;border:1px solid rgba(29,185,84,.25);
+  border-radius:20px;width:100%;max-width:500px;
+  max-height:90vh;overflow-y:auto;
+  transform:translateY(40px);
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 0 80px rgba(29,185,84,.12),0 40px 80px rgba(0,0,0,.7);
+}
+.woverlay.vis .wpanel{transform:translateY(0);}
+.wheader{
+  background:linear-gradient(135deg,#0a3d1f,#1a5c2e 50%,#0d2b15);
+  border-radius:18px 18px 0 0;padding:32px 28px 24px;position:relative;overflow:hidden;
+}
+.wheader::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(29,185,84,.22) 0%,transparent 70%);
+}
+.wtag{font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:6px;}
+.wtitle{font-size:2.2rem;font-weight:800;letter-spacing:-.03em;line-height:1;}
+.wsub{font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.45);margin-top:6px;}
+.wbody{padding:24px 28px 28px;}
+.wsec{margin-bottom:20px;animation:fadeUp .45s ease both;}
+.wsec:nth-child(1){animation-delay:.08s}
+.wsec:nth-child(2){animation-delay:.14s}
+.wsec:nth-child(3){animation-delay:.20s}
+.wsec:nth-child(4){animation-delay:.26s}
+.wsec:nth-child(5){animation-delay:.32s}
+.wlbl{
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.wlbl::after{content:'';flex:1;height:1px;background:var(--border);}
+.wsong-row{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 0;border-bottom:1px solid var(--border);
+}
+.wsong-row:last-child{border-bottom:none;}
+.wsong-num{font-family:var(--mono);font-size:1.2rem;color:var(--green);width:26px;flex-shrink:0;line-height:1;}
+.wsong-art{width:38px;height:38px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;color:rgba(0,0,0,.7);}
+.wsong-info{flex:1;min-width:0;}
+.wsong-title{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wsong-sub{font-size:.68rem;color:var(--muted);margin-top:1px;}
+.wsong-score{font-family:var(--mono);font-size:.7rem;flex-shrink:0;}
+.wsong-score.r{color:var(--green);}
+.wsong-score.p{color:var(--yellow);}
+.wsong-score.s{color:var(--red);}
+.wbig{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;padding:16px 18px;
+  display:flex;align-items:center;gap:14px;
+}
+.wbig-icon{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:var(--green-lo);}
+.wbig-val{font-size:1.05rem;font-weight:800;letter-spacing:-.015em;}
+.wbig-sub{font-family:var(--mono);font-size:.63rem;color:var(--muted);margin-top:2px;}
+.wstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.wstat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;}
+.wstat-num{font-family:var(--mono);font-size:1.6rem;font-weight:500;display:block;line-height:1;}
+.wstat-num.g{color:var(--green);}
+.wstat-num.y{color:var(--yellow);}
+.wstat-num.r{color:var(--red);}
+.wstat-lbl{font-family:var(--mono);font-size:.54rem;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-top:4px;}
+.wfun{
+  background:linear-gradient(135deg,rgba(29,185,84,.1),rgba(29,185,84,.03));
+  border:1px solid rgba(29,185,84,.22);
+  border-radius:12px;padding:16px 18px;
+  font-size:.88rem;font-weight:700;line-height:1.55;
+}
+.wfun em{color:var(--green);font-style:normal;}
+.wnote{
+  margin-top:16px;padding:12px 14px;background:rgba(255,255,255,.03);
+  border-radius:8px;border:1px solid var(--border);
+  font-family:var(--mono);font-size:.58rem;color:var(--faint);
+  line-height:1.65;text-align:center;
+}
+.wnote strong{color:var(--green);}
+.wclose{
+  display:block;width:100%;margin-top:14px;padding:12px;
+  border-radius:30px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);
+  font-family:var(--syne);font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:all .2s;letter-spacing:.02em;
+}
+.wclose:hover{background:var(--bg3);color:var(--white);}
+
+/* ─── FOOTER ──────────────────────────────────────────── */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:32px;text-align:center;
+  font-family:var(--mono);font-size:.62rem;
+  color:var(--faint);letter-spacing:.06em;line-height:1.9;
+}
+footer strong{color:var(--muted);}
+
+/* ─── ANIMATIONS ──────────────────────────────────────── */
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes logIn{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:translateX(0)}}
+
+/* ─── RESPONSIVE ──────────────────────────────────────── */
+@media(max-width:900px){
+  .system-grid{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .concepts-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .stats-row{grid-template-columns:1fr;}
+  .concepts-grid{grid-template-columns:1fr;}
+  nav{padding:0 16px;}
+  .section,#system{padding-left:16px;padding-right:16px;}
+  .hero{padding:48px 16px 40px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     NAV
+═══════════════════════════════════════════════════════ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-dot">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.857zm1.223-2.722a.78.78 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 01-.973-.519.781.781 0 01.52-.973c3.632-1.102 8.147-.568 11.233 1.329a.78.78 0 01.257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.937.937 0 11-.543-1.793c3.563-1.08 9.487-.871 13.22 1.37a.937.937 0 01-.06 1.58z"/></svg>
+    </div>
+    MIS 432
+  </a>
+  <div class="nav-links">
+    <a href="#story" class="active">The Story</a>
+    <a href="#concepts">Concepts</a>
+    <a href="#system">Live Demo</a>
+  </div>
+  <span class="nav-badge">● Western Washington University</span>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-eyebrow">AI in Business · MIS 432</div>
+  <h1>How Spotify Turns <em>Behavior</em><br>Into Business Strategy</h1>
+  <p class="hero-sub">A hands-on exploration of the recommendation engine behind the world's most personalized music platform — built from scratch, explained for business leaders.</p>
+  <p class="hero-meta">
+    <span>Western Washington University</span> &nbsp;·&nbsp;
+    College of Business and Economics &nbsp;·&nbsp;
+    <span>MIS 432: AI in Business</span>
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 1 — THE BUSINESS STORY
+═══════════════════════════════════════════════════════ -->
+<div class="section" id="story">
+  <div class="section-tag">Part 1 — The Business Problem</div>
+  <h2 class="section-h2">751 Million Users. 100 Million Songs.<br>One Impossible Problem.</h2>
+  <p class="section-lead">Spotify's core challenge isn't technology. It's relevance. How do you make every single listener feel like the platform was built just for them?</p>
+
+  <div class="stats-row">
+    <div class="stat-card"><span class="stat-num">751M</span><span class="stat-label">Active Users</span></div>
+    <div class="stat-card"><span class="stat-num">100M</span><span class="stat-label">Songs in Catalog</span></div>
+    <div class="stat-card"><span class="stat-num">~30%</span><span class="stat-label">Revenue from Personalization</span></div>
+  </div>
+
+  <div class="prose">
+    <p>If Spotify showed every user the same Top 50 list, it would serve casual listeners just fine. But the people who pay — the passionate music fans with specific, deeply personal taste — would leave. They'd leave quietly, without ever filing a complaint. And Spotify would bleed revenue without knowing exactly why.</p>
+    <p>The solution is a <strong>recommendation engine</strong>: an AI system that learns what each person loves by watching what they actually do — not what they say they like. Every time you skip a song in the first five seconds, replay something three times at midnight, or let an album play all the way through, you're sending signals. Spotify collects billions of these signals every day and uses them to build a model of your taste that no survey could ever replicate.</p>
+    <p>This is the project I built in MIS 432: a simplified version of that engine, using real behavioral data, real math, and real design — to understand not just how it works technically, but <strong>what it means strategically for any business that handles data at scale.</strong></p>
+  </div>
+</div>
+
+<!-- CONCEPTS -->
+<div class="section" id="concepts">
+  <div class="section-tag">Part 2 — What I Learned</div>
+  <h2 class="section-h2">Eight Concepts That Changed<br>How I Think About AI</h2>
+  <p class="section-lead">These aren't just technical terms. Each one is a business decision in disguise.</p>
+
+  <div class="concepts-grid">
+    <div class="concept-card">
+      <div class="concept-icon">👆</div>
+      <div class="concept-title">Implicit Signals</div>
+      <div class="concept-body">Spotify doesn't ask you to rate songs. It watches whether you skip, replay, or let something play. Behavior is more honest than opinion — you can't fake what your finger actually does.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">⚙️</div>
+      <div class="concept-title">Feature Engineering</div>
+      <div class="concept-body">Raw data doesn't teach machines anything. I transformed listening events into structured numbers — skip rate, replay rate, genre affinity — that a model could actually learn from. The quality of your features determines the quality of your AI.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">🤝</div>
+      <div class="concept-title">Collaborative Filtering</div>
+      <div class="concept-body">Find people who listen like you, then recommend what they loved that you haven't heard yet. No genre labels needed. No human curation. Just math on behavior — at 751 million users simultaneously.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">🔍</div>
+      <div class="concept-title">Unsupervised Learning</div>
+      <div class="concept-body">No one told the algorithm what "late-night chill" means. It found that cluster on its own by noticing that certain behavioral patterns — long sessions, low skip rates, slow tempos — kept appearing together in the dark.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">📐</div>
+      <div class="concept-title">Embeddings</div>
+      <div class="concept-body">Spotify converts every song and every user into a point in mathematical space. Songs that "sound alike" end up near each other. Users with similar taste end up near each other. Proximity becomes prediction.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">⚠️</div>
+      <div class="concept-title">Training-Serving Gap</div>
+      <div class="concept-body">The model learned from last quarter's data. But music trends change weekly. When the model goes stale, nothing crashes — recommendations just quietly get worse. Silent failure is the most dangerous kind because no alarm sounds.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">🏛️</div>
+      <div class="concept-title">AI Governance</div>
+      <div class="concept-body">When a stale model silently harms user experience for weeks, that's not a technical failure — it's a governance failure. Someone needed a monitoring process, an alert threshold, a review cycle. AI governance is a management problem, not a coding problem.</div>
+    </div>
+    <div class="concept-card">
+      <div class="concept-icon">🏰</div>
+      <div class="concept-title">The Data Moat</div>
+      <div class="concept-body">A competitor can copy Spotify's app overnight. They cannot manufacture ten years of 751 million people honestly revealing their taste through behavior. That behavioral history is the real product. The moat widens every day Spotify operates.</div>
+    </div>
+  </div>
+</div>
+
+<!-- WRAPPED ECONOMICS -->
+<div class="section">
+  <div class="section-tag">Part 3 — The Wrapped Insight</div>
+  <h2 class="section-h2">Why Spotify Wrapped Costs<br>Almost Nothing to Produce</h2>
+  <p class="section-lead">Every December, Spotify generates 250 million personalized year-in-review summaries that go viral. The engineering cost is nearly zero. Here's why.</p>
+  <div class="prose">
+    <p>Spotify Wrapped isn't a separate product. It's a <strong>query on top of infrastructure that already exists</strong>. The behavioral data that powers your recommendations — every skip, replay, and session length — is the same data that generates your Wrapped. The pipeline is already running. Wrapped is just a different way of reading it.</p>
+    <p>This is one of the most important lessons in data strategy: <strong>a well-built data infrastructure is not a cost center — it's a compounding asset</strong>. The same investment that makes recommendations more accurate also makes marketing campaigns more targeted, makes artist royalty calculations more precise, and makes Wrapped a billion-dollar viral moment that costs almost nothing to execute.</p>
+    <p>In this project, I built a Wrapped feature using the exact same engagement scores that powered the recommendation engine. No new data. No separate system. One pipeline, multiple use cases — just like the real thing.</p>
+  </div>
+</div>
+
+<!-- KEY LESSONS -->
+<div class="section">
+  <div class="section-tag">Part 4 — Business Takeaways</div>
+  <h2 class="section-h2">3 Lessons for Any Business<br>Building with AI</h2>
+  <div class="lessons">
+    <div class="lesson">
+      <span class="lesson-num">01</span>
+      <div class="lesson-text">
+        <strong>The data you already have is your most underused asset.</strong>
+        <p>Most businesses collect behavioral signals without realizing it — click patterns, purchase sequences, support ticket language. Spotify didn't invent new data. It built systems that made existing data useful at scale. Any business that handles customer behavior is sitting on the same raw material.</p>
+      </div>
+    </div>
+    <div class="lesson">
+      <span class="lesson-num">02</span>
+      <div class="lesson-text">
+        <strong>Silent failure is more dangerous than visible failure.</strong>
+        <p>A crashed system demands immediate attention. A quietly degrading recommendation model just slowly erodes user trust until people stop coming back — and by the time you notice, the damage is done. AI governance means building systems that fail loudly, not just systems that work.</p>
+      </div>
+    </div>
+    <div class="lesson">
+      <span class="lesson-num">03</span>
+      <div class="lesson-text">
+        <strong>Personalization isn't a feature — it's a retention strategy.</strong>
+        <p>The users who drive recurring revenue aren't the casual ones who'd be fine with a Top 50 list. They're the passionate ones who will leave the moment the product stops understanding them. Building AI that serves individual taste at scale isn't a nice-to-have — it's the business model.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIVIDER -->
+<div class="divider">
+  <span class="divider-label">↓ Now try it yourself — the live recommendation engine</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PART 2 — LIVE SYSTEM
+═══════════════════════════════════════════════════════ -->
+<div id="system">
+  <div class="system-header">
+    <div class="system-header-left">
+      <div class="system-tag">Live Demo — Part 2</div>
+      <h2>Collaborative Filtering Engine</h2>
+    </div>
+    <div class="system-header-right">
+      <button class="spotify-connect-btn" id="spotifyBtn" onclick="handleSpotifyAuth()">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.857zm1.223-2.722a.78.78 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 01-.973-.519.781.781 0 01.52-.973c3.632-1.102 8.147-.568 11.233 1.329a.78.78 0 01.257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.937.937 0 11-.543-1.793c3.563-1.08 9.487-.871 13.22 1.37a.937.937 0 01-.06 1.58z"/></svg>
+        Connect Spotify
+      </button>
+    </div>
+  </div>
+
+  <div class="system-grid">
+
+    <!-- LEFT: Catalog -->
+    <div>
+      <div class="catalog-label">Song Catalog — rate each track</div>
+      <div class="catalog-list" id="catalogList"></div>
+    </div>
+
+    <!-- RIGHT: Reco + Log + Stats -->
+    <div class="right-col">
+
+      <!-- Neighbors -->
+      <div id="neighborsWrap" style="display:none">
+        <div class="panel-label">Your Taste Neighbors</div>
+        <div class="neighbors-panel">
+          <div id="neighborsList"></div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div>
+        <div class="panel-label">Recommended For You</div>
+        <div class="reco-panel" id="recoPanel">
+          <div class="reco-empty"><span class="ei">🎵</span>Rate a few songs to unlock<br>your personalized recommendations.</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div>
+        <div class="panel-label">Session Signals</div>
+        <div class="stats-pills">
+          <div class="pill"><span class="pill-num g" id="cReplay">0</span><div class="pill-lbl">Replays</div></div>
+          <div class="pill"><span class="pill-num y" id="cPlay">0</span><div class="pill-lbl">Plays</div></div>
+          <div class="pill"><span class="pill-num r" id="cSkip">0</span><div class="pill-lbl">Skips</div></div>
+        </div>
+      </div>
+
+      <!-- Live log -->
+      <div>
+        <div class="panel-label">Live Data Log</div>
+        <div class="log-box" id="logBox">
+          <div class="log-empty" id="logEmpty">Waiting for signals…<br>Every interaction is recorded here,<br>just like Spotify tracks behavior.</div>
+        </div>
+      </div>
+
+      <!-- Wrapped button -->
+      <button id="wrappedBtn" disabled onclick="openWrapped()">
+        🎁 Generate my Wrapped
+        <span class="wrapped-hint" id="wrappedHint">Rate 5 songs to unlock</span>
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- PLAYBAR -->
+<div id="playbar">
+  <div class="pb-art" id="pbArt" style="background:#333">♪</div>
+  <div class="pb-info">
+    <div id="pbTitle" class="pb-idle">Nothing playing — rate a song to begin</div>
+    <div id="pbArtist" style="display:none" class="pb-artist"></div>
+  </div>
+  <div class="pb-controls">
+    <button class="pb-btn" id="pbStop" onclick="stopPlayback()" title="Stop" style="display:none">
+      <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+    </button>
+    <button class="pb-btn play-pause" id="pbPlayPause" onclick="togglePlayback()" title="Play/Pause" style="display:none">
+      <svg viewBox="0 0 24 24" id="pbPPIcon"><polygon points="6,4 20,12 6,20"/></svg>
+    </button>
+  </div>
+  <span class="pb-mode" id="pbMode">Demo Mode</span>
+</div>
+
+<!-- WRAPPED MODAL -->
+<div class="woverlay" id="woverlay" onclick="closeWrappedClick(event)">
+  <div class="wpanel" id="wpanel"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>MIS 432: AI in Business</strong> &nbsp;·&nbsp;
+  Western Washington University, College of Business and Economics<br>
+  Built from scratch using Python, pandas, scikit-learn, and vanilla JavaScript.<br>
+  Recommendation engine uses cosine similarity collaborative filtering on 9 reference users × 15 songs.<br>
+  <strong>Spotify® is a trademark of Spotify AB.</strong> This is an independent academic project.
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+// ─── SONG DATA ───────────────────────────────────────────
+const SONGS = [
+  {name:"Blinding Lights",    artist:"The Weeknd",                     genre:"Pop",       color:"#c0392b", uri:"spotify:track:0VjIjW4GlUZAMYd2vXMi3b"},
+  {name:"HUMBLE.",            artist:"Kendrick Lamar",                 genre:"Hip-Hop",   color:"#8e44ad", uri:"spotify:track:7KXjTSCq5nL1oCMFzGZBtk"},
+  {name:"Levitating",         artist:"Dua Lipa",                       genre:"Pop",       color:"#2980b9", uri:"spotify:track:463CkQjx2Zfoiqr0mS5jxT"},
+  {name:"bad guy",            artist:"Billie Eilish",                  genre:"Indie Pop", color:"#27ae60", uri:"spotify:track:2Fxmhks0live0jfOPEFaJC"},
+  {name:"God's Plan",         artist:"Drake",                          genre:"Hip-Hop",   color:"#f39c12", uri:"spotify:track:6DCZcSspjsKoFjzjrWoCdn"},
+  {name:"As It Was",          artist:"Harry Styles",                   genre:"Pop",       color:"#e74c3c", uri:"spotify:track:4Dvkj6JhhA12EX05fT7y2e"},
+  {name:"MONTERO",            artist:"Lil Nas X",                      genre:"Hip-Hop",   color:"#9b59b6", uri:"spotify:track:7qiZfU4dY1lWllzX7mPBI3"},
+  {name:"drivers license",    artist:"Olivia Rodrigo",                 genre:"Pop",       color:"#1abc9c", uri:"spotify:track:5wANPM4fQCJwkW6BVyqypG"},
+  {name:"Watermelon Sugar",   artist:"Harry Styles",                   genre:"Pop",       color:"#e67e22", uri:"spotify:track:6UelLqGlWMcVH1E5c4H7lY"},
+  {name:"Peaches",            artist:"Justin Bieber",                  genre:"R&B",       color:"#f1c40f", uri:"spotify:track:4iJyoBOLtHqaWYs3wyiLXT"},
+  {name:"Industry Baby",      artist:"Lil Nas X",                      genre:"Hip-Hop",   color:"#e74c3c", uri:"spotify:track:5Z01UMMf7V1o0MzF86s6WJ"},
+  {name:"good 4 u",          artist:"Olivia Rodrigo",                 genre:"Pop Rock",  color:"#3498db", uri:"spotify:track:4ZtFanR9U6ndgddUvNcjcG"},
+  {name:"Leave The Door Open",artist:"Bruno Mars",                     genre:"R&B",       color:"#1DB954", uri:"spotify:track:0iEtIxbK0KqIbQe2eCKCdg"},
+  {name:"STAY",               artist:"The Kid LAROI & Justin Bieber",  genre:"Pop",       color:"#e91e8c", uri:"spotify:track:5PjdY0CKGZdEuoNab3yDmX"},
+  {name:"Heat Waves",         artist:"Glass Animals",                  genre:"Indie",     color:"#00bcd4", uri:"spotify:track:02MWAaffLxlfxAUY7c5dvx"},
+];
+
+// ─── REFERENCE USERS ─────────────────────────────────────
+const REF = {
+  user_01:{As_It_Was:0.9,Blinding_Lights:0.9,Gods_Plan:0.1,HUMBLE:0.1,Heat_Waves:0.5,Industry_Baby:0.1,Leave_The_Door_Open:0.1,Levitating:0.9,MONTERO:0.5,Peaches:0.1,STAY:0.9,Watermelon_Sugar:0.9,bad_guy:0.1,drivers_license:0.9,good_4_u:0.5},
+  user_02:{As_It_Was:0.5,Blinding_Lights:0.9,Gods_Plan:0.1,HUMBLE:0.1,Heat_Waves:0.5,Industry_Baby:0.1,Leave_The_Door_Open:0.1,Levitating:0.9,MONTERO:0.1,Peaches:0.9,STAY:0.5,Watermelon_Sugar:0.9,bad_guy:0.5,drivers_license:0.9,good_4_u:0.1},
+  user_03:{As_It_Was:0.1,Blinding_Lights:0.1,Gods_Plan:0.9,HUMBLE:0.9,Heat_Waves:0.1,Industry_Baby:0.9,Leave_The_Door_Open:0.1,Levitating:0.1,MONTERO:0.5,Peaches:0.5,STAY:0.1,Watermelon_Sugar:0.5,bad_guy:0.9,drivers_license:0.1,good_4_u:0.1},
+  user_04:{As_It_Was:0.5,Blinding_Lights:0.1,Gods_Plan:0.9,HUMBLE:0.9,Heat_Waves:0.5,Industry_Baby:0.9,Leave_The_Door_Open:0.1,Levitating:0.1,MONTERO:0.9,Peaches:0.1,STAY:0.1,Watermelon_Sugar:0.9,bad_guy:0.5,drivers_license:0.1,good_4_u:0.1},
+  user_05:{As_It_Was:0.9,Blinding_Lights:0.9,Gods_Plan:0.9,HUMBLE:0.5,Heat_Waves:0.5,Industry_Baby:0.1,Leave_The_Door_Open:0.5,Levitating:0.5,MONTERO:0.1,Peaches:0.9,STAY:0.5,Watermelon_Sugar:0.5,bad_guy:0.5,drivers_license:0.1,good_4_u:0.5},
+  user_06:{As_It_Was:0.9,Blinding_Lights:0.9,Gods_Plan:0.1,HUMBLE:0.5,Heat_Waves:0.1,Industry_Baby:0.1,Leave_The_Door_Open:0.9,Levitating:0.9,MONTERO:0.1,Peaches:0.9,STAY:0.9,Watermelon_Sugar:0.5,bad_guy:0.1,drivers_license:0.9,good_4_u:0.9},
+  user_07:{As_It_Was:0.5,Blinding_Lights:0.1,Gods_Plan:0.1,HUMBLE:0.5,Heat_Waves:0.9,Industry_Baby:0.1,Leave_The_Door_Open:0.1,Levitating:0.9,MONTERO:0.9,Peaches:0.5,STAY:0.5,Watermelon_Sugar:0.9,bad_guy:0.9,drivers_license:0.5,good_4_u:0.5},
+  user_08:{As_It_Was:0.5,Blinding_Lights:0.9,Gods_Plan:0.9,HUMBLE:0.1,Heat_Waves:0.1,Industry_Baby:0.9,Leave_The_Door_Open:0.5,Levitating:0.9,MONTERO:0.1,Peaches:0.9,STAY:0.9,Watermelon_Sugar:0.9,bad_guy:0.5,drivers_license:0.9,good_4_u:0.9},
+  user_09:{As_It_Was:0.5,Blinding_Lights:0.9,Gods_Plan:0.9,HUMBLE:0.9,Heat_Waves:0.1,Industry_Baby:0.9,Leave_The_Door_Open:0.5,Levitating:0.9,MONTERO:0.9,Peaches:0.5,STAY:0.9,Watermelon_Sugar:0.9,bad_guy:0.1,drivers_license:0.9,good_4_u:0.1},
+};
+
+// Key map: song name → ref user key
+function songKey(name){
+  return name.replace(/[''']/g,"").replace(/\s+/g,"_")
+    .replace("God's_Plan","Gods_Plan")
+    .replace("HUMBLE.","HUMBLE")
+    .replace("good_4_u","good_4_u");
+}
+
+// ─── STATE ───────────────────────────────────────────────
+let scores={}, cR=0,cP=0,cS=0;
+let nowPlaying=null, isPaused=false;
+let spotifyToken=null, spotifyPlayer=null, spotifyReady=false;
+const CLIENT_ID='b586d81f528c4bc29c12141188543ec1';
+
+// ─── COSINE SIMILARITY ────────────────────────────────────
+function cosine(a,b){
+  let dot=0,na=0,nb=0;
+  for(let i=0;i<a.length;i++){dot+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];}
+  if(!na||!nb)return 0;
+  return dot/(Math.sqrt(na)*Math.sqrt(nb));
+}
+function vec(scoreMap){return SONGS.map(s=>scoreMap[songKey(s.name)]||0);}
+
+// ─── RECOMMENDATIONS ─────────────────────────────────────
+function recommend(){
+  const myVec=vec(scores);
+  const rated=new Set(Object.keys(scores).map(k=>k));
+  const sims=Object.entries(REF).map(([uid,u])=>({uid,sim:cosine(myVec,vec(u)),u}));
+  sims.sort((a,b)=>b.sim-a.sim);
+  const top3=sims.slice(0,3);
+  // Render neighbors
+  document.getElementById('neighborsWrap').style.display='block';
+  document.getElementById('neighborsList').innerHTML=top3.map(n=>`
+    <div class="neighbor-row">
+      <span class="n-label">${n.uid.replace('user_','User ')}</span>
+      <div class="n-track"><div class="n-fill" style="width:${Math.round(n.sim*100)}%"></div></div>
+      <span class="n-score">${n.sim.toFixed(2)}</span>
+    </div>`).join('');
+  // Collect candidates
+  const cands={};
+  for(const n of top3){
+    for(const s of SONGS){
+      const k=songKey(s.name);
+      if(!rated.has(k)&&(n.u[k]||0)>=0.5){
+        if(!cands[s.name])cands[s.name]={ws:0,wt:0};
+        cands[s.name].ws+=(n.u[k]||0)*n.sim;
+        cands[s.name].wt+=n.sim;
+      }
+    }
+  }
+  const results=Object.entries(cands)
+    .map(([name,d])=>({name,score:d.wt>0?d.ws/d.wt:0}))
+    .sort((a,b)=>b.score-a.score).slice(0,5);
+  // Render
+  const panel=document.getElementById('recoPanel');
+  if(!results.length){
+    panel.innerHTML='<div class="reco-empty"><span class="ei">🤔</span>Rate more songs to refine your recommendations.</div>';
+    return;
+  }
+  panel.innerHTML=results.map((r,i)=>{
+    const meta=SONGS.find(s=>s.name===r.name);
+    const pct=Math.round((r.score/0.9)*100);
+    return `<div class="reco-card" style="animation-delay:${i*.06}s">
+      <span class="reco-rank">${i+1}</span>
+      <div class="reco-art" style="background:${meta.color}">${meta.name[0]}</div>
+      <div class="reco-info"><div class="reco-title">${meta.name}</div><div class="reco-artist">${meta.artist}</div></div>
+      <div class="reco-score-col">
+        <div class="reco-score">${r.score.toFixed(2)}</div>
+        <div class="reco-bar"><div class="reco-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── INTERACTION HANDLER ─────────────────────────────────
+function interact(name,action,score,btn,card){
+  const k=songKey(name);
+  const prev=scores[k];
+  if(prev===0.9)cR--;else if(prev===0.5)cP--;else if(prev===0.1)cS--;
+  scores[k]=score;
+  if(score===0.9)cR++;else if(score===0.5)cP++;else if(score===0.1)cS++;
+  document.getElementById('cReplay').textContent=cR;
+  document.getElementById('cPlay').textContent=cP;
+  document.getElementById('cSkip').textContent=cS;
+  // buttons
+  card.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  card.classList.remove('state-replay','state-play','state-skip');
+  card.classList.add('state-'+action);
+  // playback
+  if(action==='replay'||action==='play'){
+    const meta=SONGS.find(s=>s.name===name);
+    setNowPlaying(meta);
+    if(action==='replay'&&spotifyToken&&spotifyPlayer){
+      playSpotify(meta.uri);
+    }
+  }
+  logSignal(name,action,score);
+  recommend();
+  updateWrappedBtn();
+}
+
+// ─── PLAYBAR ─────────────────────────────────────────────
+function setNowPlaying(meta){
+  if(nowPlaying?.name===meta.name&&!isPaused){return;}
+  nowPlaying=meta;isPaused=false;
+  // mark card
+  document.querySelectorAll('.song-card').forEach(c=>c.classList.remove('now-playing'));
+  const card=document.getElementById('sc-'+meta.name.replace(/\s+/g,'-').replace(/[^\w-]/g,''));
+  if(card)card.classList.add('now-playing');
+  // update bar
+  document.getElementById('pbArt').style.background=meta.color;
+  document.getElementById('pbArt').textContent=meta.name[0];
+  document.getElementById('pbTitle').textContent=meta.name;
+  document.getElementById('pbTitle').className='pb-title';
+  document.getElementById('pbArtist').textContent=meta.artist;
+  document.getElementById('pbArtist').style.display='block';
+  document.getElementById('pbStop').style.display='flex';
+  document.getElementById('pbPlayPause').style.display='flex';
+  document.getElementById('pbPPIcon').innerHTML='<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
+}
+function togglePlayback(){
+  if(!nowPlaying)return;
+  isPaused=!isPaused;
+  const icon=document.getElementById('pbPPIcon');
+  if(isPaused){
+    icon.innerHTML='<polygon points="6,4 20,12 6,20"/>';
+    if(spotifyPlayer)spotifyPlayer.pause();
+  } else {
+    icon.innerHTML='<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
+    if(spotifyPlayer)spotifyPlayer.resume();
+  }
+  // update card animation
+  const card=nowPlaying?document.getElementById('sc-'+nowPlaying.name.replace(/\s+/g,'-').replace(/[^\w-]/g,'')):null;
+  if(card){if(isPaused)card.classList.remove('now-playing');else card.classList.add('now-playing');}
+}
+function stopPlayback(){
+  if(nowPlaying){
+    const card=document.getElementById('sc-'+nowPlaying.name.replace(/\s+/g,'-').replace(/[^\w-]/g,''));
+    if(card)card.classList.remove('now-playing');
+  }
+  nowPlaying=null;isPaused=false;
+  document.getElementById('pbArt').style.background='#333';
+  document.getElementById('pbArt').textContent='♪';
+  document.getElementById('pbTitle').textContent='Nothing playing — rate a song to begin';
+  document.getElementById('pbTitle').className='pb-idle';
+  document.getElementById('pbArtist').style.display='none';
+  document.getElementById('pbStop').style.display='none';
+  document.getElementById('pbPlayPause').style.display='none';
+  if(spotifyPlayer)spotifyPlayer.pause();
+}
+
+// ─── SPOTIFY OAUTH PKCE ──────────────────────────────────
+function base64url(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');}
+async function handleSpotifyAuth(){
+  if(spotifyToken){disconnectSpotify();return;}
+  const verifier=base64url(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge=base64url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier)));
+  sessionStorage.setItem('pkce_verifier',verifier);
+  const params=new URLSearchParams({
+    response_type:'code',client_id:CLIENT_ID,
+    scope:'streaming user-read-email user-read-private user-modify-playback-state',
+    redirect_uri:location.href.split('?')[0],
+    code_challenge_method:'S256',code_challenge:challenge
+  });
+  location.href='https://accounts.spotify.com/authorize?'+params;
+}
+async function handleCallback(){
+  const params=new URLSearchParams(location.search);
+  const code=params.get('code');
+  if(!code)return;
+  history.replaceState({},'',location.pathname);
+  const verifier=sessionStorage.getItem('pkce_verifier');
+  try{
+    const res=await fetch('https://accounts.spotify.com/api/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:new URLSearchParams({grant_type:'authorization_code',code,redirect_uri:location.href.split('?')[0],client_id:CLIENT_ID,code_verifier:verifier})
+    });
+    const data=await res.json();
+    if(data.access_token){
+      spotifyToken=data.access_token;
+      setSpotifyConnected();
+      loadSpotifySDK();
+    }
+  }catch(e){console.warn('Spotify auth error',e);}
+}
+function setSpotifyConnected(){
+  const btn=document.getElementById('spotifyBtn');
+  btn.classList.add('connected');
+  btn.innerHTML=`<svg viewBox="0 0 24 24" style="fill:var(--green)"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.857zm1.223-2.722a.78.78 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 01-.973-.519.781.781 0 01.52-.973c3.632-1.102 8.147-.568 11.233 1.329a.78.78 0 01.257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.937.937 0 11-.543-1.793c3.563-1.08 9.487-.871 13.22 1.37a.937.937 0 01-.06 1.58z"/></svg> Connected ✓`;
+  document.getElementById('pbMode').textContent='Spotify Premium';
+  document.getElementById('pbMode').className='pb-mode premium';
+}
+function disconnectSpotify(){
+  spotifyToken=null;spotifyPlayer=null;spotifyReady=false;
+  const btn=document.getElementById('spotifyBtn');
+  btn.classList.remove('connected');
+  btn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.857zm1.223-2.722a.78.78 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 01-.973-.519.781.781 0 01.52-.973c3.632-1.102 8.147-.568 11.233 1.329a.78.78 0 01.257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.937.937 0 11-.543-1.793c3.563-1.08 9.487-.871 13.22 1.37a.937.937 0 01-.06 1.58z"/></svg> Connect Spotify`;
+  document.getElementById('pbMode').textContent='Demo Mode';
+  document.getElementById('pbMode').className='pb-mode';
+}
+function loadSpotifySDK(){
+  window.onSpotifyWebPlaybackSDKReady=initPlayer;
+  const s=document.createElement('script');
+  s.src='https://sdk.scdn.co/spotify-player.js';
+  document.head.appendChild(s);
+}
+function initPlayer(){
+  spotifyPlayer=new Spotify.Player({name:'MIS 432 Demo',getOAuthToken:cb=>cb(spotifyToken),volume:0.5});
+  spotifyPlayer.addListener('ready',({device_id})=>{spotifyReady=true;window._spotifyDeviceId=device_id;});
+  spotifyPlayer.connect();
+}
+async function playSpotify(uri){
+  if(!spotifyReady||!window._spotifyDeviceId)return;
+  await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${window._spotifyDeviceId}`,{
+    method:'PUT',
+    headers:{Authorization:'Bearer '+spotifyToken,'Content-Type':'application/json'},
+    body:JSON.stringify({uris:[uri]})
+  });
+}
+
+// ─── LOG ─────────────────────────────────────────────────
+function logSignal(name,action,score){
+  const box=document.getElementById('logBox');
+  const e=document.getElementById('logEmpty');
+  if(e)e.remove();
+  const t=new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const div=document.createElement('div');
+  div.className=`log-line ${action}`;
+  div.innerHTML=`<span class="lt">${t}</span> <span class="la ${action}">${action.toUpperCase()}</span> <span class="ls">"${name}"</span> <span class="lsc">→ ${score}</span>`;
+  box.prepend(div);
+}
+
+// ─── WRAPPED BUTTON STATE ────────────────────────────────
+function updateWrappedBtn(){
+  const n=Object.keys(scores).length;
+  const btn=document.getElementById('wrappedBtn');
+  const hint=document.getElementById('wrappedHint');
+  if(n>=5){
+    btn.disabled=false;btn.classList.add('active');
+    hint.textContent=`Based on ${n} rated songs`;
+  } else {
+    btn.disabled=true;btn.classList.remove('active');
+    hint.textContent=`Rate ${5-n} more song${5-n!==1?'s':''} to unlock`;
+  }
+}
+
+// ─── WRAPPED MODAL ────────────────────────────────────────
+function openWrapped(){
+  const entries=Object.entries(scores);
+  if(entries.length<5)return;
+  const sorted=[...entries].sort((a,b)=>b[1]-a[1]);
+  const top3=sorted.slice(0,3);
+  // top artist
+  const aScores={};
+  for(const [k,sc] of entries){
+    if(sc>=0.5){
+      const meta=SONGS.find(s=>songKey(s.name)===k);
+      if(meta)aScores[meta.artist]=(aScores[meta.artist]||0)+sc;
+    }
+  }
+  const topArtist=Object.entries(aScores).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+  // top genre
+  const gData={};
+  for(const [k,sc] of entries){
+    const meta=SONGS.find(s=>songKey(s.name)===k);
+    if(!meta)continue;
+    if(!gData[meta.genre])gData[meta.genre]={sum:0,n:0};
+    gData[meta.genre].sum+=sc;gData[meta.genre].n++;
+  }
+  const topGenre=Object.entries(gData).map(([g,d])=>({g,avg:d.sum/d.n})).sort((a,b)=>b.avg-a.avg)[0]?.g||'—';
+  const rC=entries.filter(([,s])=>s===0.9).length;
+  const pC=entries.filter(([,s])=>s===0.5).length;
+  const sC=entries.filter(([,s])=>s===0.1).length;
+  const topPct=Math.max(1,Math.round((1-(rC/entries.length))*100));
+  function scoreLabel(s){if(s>=0.9)return{cls:'r',txt:'↑ Replayed'};if(s>=0.5)return{cls:'p',txt:'→ Played'};return{cls:'s',txt:'↓ Skipped'};}
+  const top3HTML=top3.map(([k,sc],i)=>{
+    const meta=SONGS.find(s=>songKey(s.name)===k);
+    const sl=scoreLabel(sc);
+    return meta?`<div class="wsong-row">
+      <span class="wsong-num">${i+1}</span>
+      <div class="wsong-art" style="background:${meta.color}">${meta.name[0]}</div>
+      <div class="wsong-info"><div class="wsong-title">${meta.name}</div><div class="wsong-sub">${meta.artist} · ${meta.genre}</div></div>
+      <span class="wsong-score ${sl.cls}">${sl.txt}</span>
+    </div>`:'';
+  }).join('');
+  document.getElementById('wpanel').innerHTML=`
+    <div class="wheader">
+      <div class="wtag">MIS 432 Session · ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+      <div class="wtitle">Your Wrapped</div>
+      <div class="wsub">${entries.length} songs rated · powered by collaborative filtering</div>
+    </div>
+    <div class="wbody">
+      <div class="wsec"><div class="wlbl">Your Top Songs</div>${top3HTML}</div>
+      <div class="wsec"><div class="wlbl">Top Artist</div>
+        <div class="wbig"><div class="wbig-icon">🎤</div><div><div class="wbig-val">${topArtist}</div><div class="wbig-sub">highest combined engagement this session</div></div></div>
+      </div>
+      <div class="wsec"><div class="wlbl">Top Genre</div>
+        <div class="wbig"><div class="wbig-icon">🎵</div><div><div class="wbig-val">${topGenre}</div><div class="wbig-sub">highest average engagement score</div></div></div>
+      </div>
+      <div class="wsec"><div class="wlbl">Session Stats</div>
+        <div class="wstats">
+          <div class="wstat"><span class="wstat-num g">${rC}</span><div class="wstat-lbl">Replays</div></div>
+          <div class="wstat"><span class="wstat-num y">${pC}</span><div class="wstat-lbl">Plays</div></div>
+          <div class="wstat"><span class="wstat-num r">${sC}</span><div class="wstat-lbl">Skips</div></div>
+        </div>
+      </div>
+      <div class="wsec"><div class="wlbl">Listener Persona</div>
+        <div class="wfun">You were in the <em>top ${topPct}%</em> of <em>${topArtist}</em> listeners this session — your replay rate puts you in rare company.</div>
+      </div>
+      <div class="wnote"><strong>ℹ️ This Wrapped was generated from the exact same data log that powered your recommendations above.</strong><br>Every skip (0.1), play (0.5), and replay (0.9) was used both to find your taste neighbors via cosine similarity and to compute this summary — no separate data collected.</div>
+      <button class="wclose" onclick="closeWrapped()">Close Wrapped</button>
+    </div>`;
+  document.getElementById('woverlay').classList.add('vis');
+  document.body.style.overflow='hidden';
+}
+function closeWrapped(){document.getElementById('woverlay').classList.remove('vis');document.body.style.overflow='';}
+function closeWrappedClick(e){if(e.target===document.getElementById('woverlay'))closeWrapped();}
+
+// ─── BUILD CATALOG ────────────────────────────────────────
+function buildCatalog(){
+  const list=document.getElementById('catalogList');
+  SONGS.forEach(song=>{
+    const id='sc-'+song.name.replace(/\s+/g,'-').replace(/[^\w-]/g,'');
+    const card=document.createElement('div');
+    card.className='song-card';card.id=id;
+    card.innerHTML=`
+      <div class="art" style="background:${song.color}">
+        ${song.name[0]}
+        <div class="playing-anim"><span></span><span></span><span></span></div>
+      </div>
+      <div class="song-info">
+        <div class="song-title">${song.name}</div>
+        <div class="song-artist">${song.artist}</div>
+      </div>
+      <span class="genre-pill">${song.genre}</span>
+      <div class="btn-trio">
+        <button class="btn btn-s" onclick="interact('${song.name}','skip',0.1,this,document.getElementById('${id}'))">Skip</button>
+        <button class="btn btn-p" onclick="interact('${song.name}','play',0.5,this,document.getElementById('${id}'))">Play</button>
+        <button class="btn btn-r" onclick="interact('${song.name}','replay',0.9,this,document.getElementById('${id}'))">Replay</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+buildCatalog();
+handleCallback(); // check for Spotify OAuth redirect
+</script>
+</body>
+</html>
