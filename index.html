@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How Spotify Thinks — MIS 432 AI in Business</title>
+<title>How Spotify Thinks. MIS 432 AI in Business</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,500;1,700&display=swap" rel="stylesheet">
 
 <style>
 :root {
@@ -19,13 +19,14 @@
   --yellow:     #f5a623;
   --red:        #e8444d;
   --white:      #ffffff;
+  --off-white:  #f0eeee;
   --muted:      #b3b3b3;
   --faint:      #535353;
   --border:     rgba(255,255,255,0.07);
   --border2:    rgba(255,255,255,0.12);
-  --syne:       'Syne', sans-serif;
+  --sans:       'Plus Jakarta Sans', sans-serif;
   --mono:       'DM Mono', monospace;
-  --lora:       'Lora', serif;
+  --serif:      'Playfair Display', serif;
   --playbar-h:  72px;
 }
 
@@ -36,7 +37,7 @@ html{scroll-behavior:smooth;}
 body{
   background:var(--bg);
   color:var(--white);
-  font-family:var(--syne);
+  font-family:var(--sans);
   min-height:100vh;
   overflow-x:hidden;
   padding-bottom:calc(var(--playbar-h) + 24px);
@@ -49,6 +50,20 @@ body::after{
   opacity:.5;
 }
 
+
+/* scroll progress */
+#progress-bar {
+  position: fixed; top: 0; left: 0; z-index: 200;
+  height: 2px; background: var(--green); width: 0%;
+  transition: width .1s linear;
+}
+
+/* scroll progress bar */
+#progress-bar{
+  position:fixed;top:0;left:0;z-index:200;
+  height:2px;background:var(--green);width:0%;
+  transition:width .12s linear;
+}
 /* ─── NAV ─────────────────────────────────────────────── */
 nav{
   position:sticky;top:0;z-index:90;
@@ -112,7 +127,7 @@ nav{
   font-style:normal;color:var(--green);
 }
 .hero-sub{
-  font-family:var(--lora);font-style:italic;
+  font-family:var(--serif);font-style:italic;
   font-size:1.1rem;color:var(--muted);line-height:1.7;
   max-width:640px;margin:0 auto 32px;
 }
@@ -142,12 +157,12 @@ nav{
   margin-bottom:24px;
 }
 .section-lead{
-  font-family:var(--lora);font-style:italic;
+  font-family:var(--serif);font-style:italic;
   font-size:1.05rem;color:var(--muted);line-height:1.75;
   margin-bottom:32px;max-width:680px;
 }
 .prose{
-  font-size:.95rem;line-height:1.8;color:var(--muted);
+  font-size:.97rem;line-height:1.88;color:var(--muted);
   max-width:700px;
 }
 .prose p{margin-bottom:1.2em;}
@@ -165,7 +180,7 @@ nav{
   transition:border-color .2s,transform .2s;
   animation:fadeUp .5s ease both;
 }
-.concept-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.concept-card:hover{border-color:var(--green-mid);background:var(--bg4);transform:translateY(-3px);}
 .concept-card:nth-child(1){animation-delay:.05s;}
 .concept-card:nth-child(2){animation-delay:.1s;}
 .concept-card:nth-child(3){animation-delay:.15s;}
@@ -181,7 +196,7 @@ nav{
 }
 .concept-body{
   font-size:.78rem;color:var(--muted);line-height:1.65;
-  font-family:var(--lora);font-style:italic;
+  font-family:var(--serif);font-style:italic;
 }
 
 /* ─── STAT CALLOUTS ───────────────────────────────────── */
@@ -215,10 +230,13 @@ nav{
   font-family:var(--mono);font-size:.65rem;color:var(--green);
   flex-shrink:0;margin-top:3px;
 }
-.lesson-text strong{
-  font-size:.9rem;font-weight:700;display:block;margin-bottom:4px;
+
+.lesson-title{
+  font-size:.95rem;font-weight:700;color:var(--white);
+  margin-bottom:6px;letter-spacing:-.01em;
 }
-.lesson-text p{font-size:.82rem;color:var(--muted);line-height:1.6;}
+.lesson-body{font-size:.84rem;color:var(--muted);line-height:1.72;}
+
 
 /* ─── DIVIDER ─────────────────────────────────────────── */
 .divider{
@@ -260,7 +278,7 @@ nav{
   display:flex;align-items:center;gap:8px;
   background:var(--green);color:#000;
   border:none;border-radius:30px;
-  font-family:var(--syne);font-weight:700;font-size:.78rem;
+  font-family:var(--sans);font-weight:700;font-size:.78rem;
   padding:9px 18px;cursor:pointer;
   transition:all .2s;letter-spacing:.01em;
 }
@@ -454,7 +472,7 @@ nav{
 /* Wrapped button */
 #wrappedBtn{
   width:100%;padding:13px;border-radius:30px;border:none;
-  font-family:var(--syne);font-size:.82rem;font-weight:800;
+  font-family:var(--sans);font-size:.82rem;font-weight:800;
   cursor:not-allowed;
   background:var(--bg3);color:var(--faint);
   border:1px solid var(--border);
@@ -601,7 +619,7 @@ nav{
   display:block;width:100%;margin-top:14px;padding:12px;
   border-radius:30px;border:1px solid var(--border);
   background:transparent;color:var(--muted);
-  font-family:var(--syne);font-size:.8rem;font-weight:700;
+  font-family:var(--sans);font-size:.8rem;font-weight:700;
   cursor:pointer;transition:all .2s;letter-spacing:.02em;
 }
 .wclose:hover{background:var(--bg3);color:var(--white);}
@@ -637,6 +655,7 @@ footer strong{color:var(--muted);}
 </style>
 </head>
 <body>
+<div id="progress-bar"></div>
 
 <!-- ═══════════════════════════════════════════════════════
      NAV
@@ -662,19 +681,19 @@ footer strong{color:var(--muted);}
 <div class="hero">
   <div class="hero-eyebrow">AI in Business · MIS 432</div>
   <h1>How Spotify Turns <em>Behavior</em><br>Into Business Strategy</h1>
-  <p class="hero-sub">A hands-on exploration of the recommendation engine behind the world's most personalized music platform — built from scratch, explained for business leaders.</p>
-  <p class="hero-meta">
-    <span>Western Washington University</span> &nbsp;·&nbsp;
-    College of Business and Economics &nbsp;·&nbsp;
-    <span>MIS 432: AI in Business</span>
-  </p>
+  <p class="hero-sub">A hands-on exploration of the recommendation engine behind the world's most personalized music platform. built from scratch and explained for business leaders.</p>
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
+    <span style="font-size:.78rem;font-weight:500;color:var(--muted);background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 14px;">Western Washington University</span>
+    <span style="font-size:.78rem;font-weight:500;color:var(--muted);background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 14px;">College of Business and Economics</span>
+    <span style="font-size:.78rem;font-weight:500;color:var(--muted);background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 14px;">MIS 432: AI in Business</span>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════
-     PART 1 — THE BUSINESS STORY
+     PART 1. THE BUSINESS STORY
 ═══════════════════════════════════════════════════════ -->
 <div class="section" id="story">
-  <div class="section-tag">Part 1 — The Business Problem</div>
+  <div class="section-tag">Part 1 · The Business Problem</div>
   <h2 class="section-h2">751 Million Users. 100 Million Songs.<br>One Impossible Problem.</h2>
   <p class="section-lead">Spotify's core challenge isn't technology. It's relevance. How do you make every single listener feel like the platform was built just for them?</p>
 
@@ -685,15 +704,15 @@ footer strong{color:var(--muted);}
   </div>
 
   <div class="prose">
-    <p>If Spotify showed every user the same Top 50 list, it would serve casual listeners just fine. But the people who pay — the passionate music fans with specific, deeply personal taste — would leave. They'd leave quietly, without ever filing a complaint. And Spotify would bleed revenue without knowing exactly why.</p>
-    <p>The solution is a <strong>recommendation engine</strong>: an AI system that learns what each person loves by watching what they actually do — not what they say they like. Every time you skip a song in the first five seconds, replay something three times at midnight, or let an album play all the way through, you're sending signals. Spotify collects billions of these signals every day and uses them to build a model of your taste that no survey could ever replicate.</p>
-    <p>This is the project I built in MIS 432: a simplified version of that engine, using real behavioral data, real math, and real design — to understand not just how it works technically, but <strong>what it means strategically for any business that handles data at scale.</strong></p>
+    <p>If Spotify showed every user the same Top 50 list, it would serve casual listeners just fine. But the people who pay are the passionate music fans with specific, deeply personal taste. would leave. They would leave quietly, without filing a complaint, and Spotify would bleed revenue without knowing exactly why.</p>
+    <p>The solution is a <strong>recommendation engine</strong>: an AI system that learns what each person loves by watching what they actually do, not what they say they like. Every time you skip a song in the first five seconds, replay something three times at midnight, or let an album play all the way through, you're sending signals. Spotify collects billions of these signals every day and uses them to build a model of your taste that no survey could ever replicate.</p>
+    <p>This is the project I built in MIS 432: a simplified version of that engine, using real behavioral data, real math, and real design. to understand not just how it works technically but <strong>what it means strategically for any business that handles data at scale.</strong></p>
   </div>
 </div>
 
 <!-- CONCEPTS -->
 <div class="section" id="concepts">
-  <div class="section-tag">Part 2 — What I Learned</div>
+  <div class="section-tag">Part 2 · What I Learned</div>
   <h2 class="section-h2">Eight Concepts That Changed<br>How I Think About AI</h2>
   <p class="section-lead">These aren't just technical terms. Each one is a business decision in disguise.</p>
 
@@ -701,22 +720,22 @@ footer strong{color:var(--muted);}
     <div class="concept-card">
       <div class="concept-icon">👆</div>
       <div class="concept-title">Implicit Signals</div>
-      <div class="concept-body">Spotify doesn't ask you to rate songs. It watches whether you skip, replay, or let something play. Behavior is more honest than opinion — you can't fake what your finger actually does.</div>
+      <div class="concept-body">Spotify doesn't ask you to rate songs. It watches whether you skip, replay, or let something play. Behavior is more honest than opinion because you cannot fake what your finger actually does.</div>
     </div>
     <div class="concept-card">
       <div class="concept-icon">⚙️</div>
       <div class="concept-title">Feature Engineering</div>
-      <div class="concept-body">Raw data doesn't teach machines anything. I transformed listening events into structured numbers — skip rate, replay rate, genre affinity — that a model could actually learn from. The quality of your features determines the quality of your AI.</div>
+      <div class="concept-body">Raw data doesn't teach machines anything. I transformed listening events into structured numbers. skip rate, replay rate, and genre affinity that a model could actually learn from. The quality of your features determines the quality of your AI.</div>
     </div>
     <div class="concept-card">
       <div class="concept-icon">🤝</div>
       <div class="concept-title">Collaborative Filtering</div>
-      <div class="concept-body">Find people who listen like you, then recommend what they loved that you haven't heard yet. No genre labels needed. No human curation. Just math on behavior — at 751 million users simultaneously.</div>
+      <div class="concept-body">Find people who listen like you, then recommend what they loved that you haven't heard yet. No genre labels needed. No human curation. Just math applied to behavior, running across 751 million users simultaneously.</div>
     </div>
     <div class="concept-card">
       <div class="concept-icon">🔍</div>
       <div class="concept-title">Unsupervised Learning</div>
-      <div class="concept-body">No one told the algorithm what "late-night chill" means. It found that cluster on its own by noticing that certain behavioral patterns — long sessions, low skip rates, slow tempos — kept appearing together in the dark.</div>
+      <div class="concept-body">No one told the algorithm what "late-night chill" means. It found that cluster on its own by noticing that certain behavioral patterns. long sessions, low skip rates, slow tempos. kept appearing together: long sessions, low skip rates, slow tempos, late hours.</div>
     </div>
     <div class="concept-card">
       <div class="concept-icon">📐</div>
@@ -726,12 +745,12 @@ footer strong{color:var(--muted);}
     <div class="concept-card">
       <div class="concept-icon">⚠️</div>
       <div class="concept-title">Training-Serving Gap</div>
-      <div class="concept-body">The model learned from last quarter's data. But music trends change weekly. When the model goes stale, nothing crashes — recommendations just quietly get worse. Silent failure is the most dangerous kind because no alarm sounds.</div>
+      <div class="concept-body">The model learned from last quarter's data. But music trends change weekly. When the model goes stale, nothing crashes. Recommendations just quietly get worse. Silent failure is the most dangerous kind because no alarm ever sounds.</div>
     </div>
     <div class="concept-card">
       <div class="concept-icon">🏛️</div>
       <div class="concept-title">AI Governance</div>
-      <div class="concept-body">When a stale model silently harms user experience for weeks, that's not a technical failure — it's a governance failure. Someone needed a monitoring process, an alert threshold, a review cycle. AI governance is a management problem, not a coding problem.</div>
+      <div class="concept-body">When a stale model silently harms user experience for weeks, that is not a technical failure. It is a governance failure. Someone needed a monitoring process, an alert threshold, a review cycle. AI governance is a management problem, not a coding problem.</div>
     </div>
     <div class="concept-card">
       <div class="concept-icon">🏰</div>
@@ -743,40 +762,40 @@ footer strong{color:var(--muted);}
 
 <!-- WRAPPED ECONOMICS -->
 <div class="section">
-  <div class="section-tag">Part 3 — The Wrapped Insight</div>
+  <div class="section-tag">Part 3 · The Wrapped Insight</div>
   <h2 class="section-h2">Why Spotify Wrapped Costs<br>Almost Nothing to Produce</h2>
   <p class="section-lead">Every December, Spotify generates 250 million personalized year-in-review summaries that go viral. The engineering cost is nearly zero. Here's why.</p>
   <div class="prose">
-    <p>Spotify Wrapped isn't a separate product. It's a <strong>query on top of infrastructure that already exists</strong>. The behavioral data that powers your recommendations — every skip, replay, and session length — is the same data that generates your Wrapped. The pipeline is already running. Wrapped is just a different way of reading it.</p>
-    <p>This is one of the most important lessons in data strategy: <strong>a well-built data infrastructure is not a cost center — it's a compounding asset</strong>. The same investment that makes recommendations more accurate also makes marketing campaigns more targeted, makes artist royalty calculations more precise, and makes Wrapped a billion-dollar viral moment that costs almost nothing to execute.</p>
-    <p>In this project, I built a Wrapped feature using the exact same engagement scores that powered the recommendation engine. No new data. No separate system. One pipeline, multiple use cases — just like the real thing.</p>
+    <p>Spotify Wrapped isn't a separate product. It's a <strong>query on top of infrastructure that already exists</strong>. The behavioral data that powers your recommendations, every skip, replay, and session length, is the same data that generates your Wrapped. The pipeline is already running. Wrapped is just a different way of reading it.</p>
+    <p>This is one of the most important lessons in data strategy: <strong>a well-built data infrastructure is not a cost center. It is a compounding asset</strong>. The same investment that makes recommendations more accurate also makes marketing campaigns more targeted, makes artist royalty calculations more precise, and makes Wrapped a billion-dollar viral moment that costs almost nothing to execute.</p>
+    <p>In this project, I built a Wrapped feature using the exact same engagement scores that powered the recommendation engine. No new data. No separate system. One pipeline, multiple use cases, just like the real thing.</p>
   </div>
 </div>
 
 <!-- KEY LESSONS -->
 <div class="section">
-  <div class="section-tag">Part 4 — Business Takeaways</div>
+  <div class="section-tag">Part 4 · Business Takeaways</div>
   <h2 class="section-h2">3 Lessons for Any Business<br>Building with AI</h2>
   <div class="lessons">
     <div class="lesson">
       <span class="lesson-num">01</span>
       <div class="lesson-text">
-        <strong>The data you already have is your most underused asset.</strong>
-        <p>Most businesses collect behavioral signals without realizing it — click patterns, purchase sequences, support ticket language. Spotify didn't invent new data. It built systems that made existing data useful at scale. Any business that handles customer behavior is sitting on the same raw material.</p>
+        <div class="lesson-title">The data you already have is your most underused asset.</div>
+        <div class="lesson-body">Most businesses collect behavioral signals without realizing it. click patterns, purchase sequences, and support ticket language. Spotify did not invent new data. It built systems that made existing data useful at scale. Any business that handles customer behavior is sitting on the same raw material.</div>
       </div>
     </div>
     <div class="lesson">
       <span class="lesson-num">02</span>
       <div class="lesson-text">
-        <strong>Silent failure is more dangerous than visible failure.</strong>
-        <p>A crashed system demands immediate attention. A quietly degrading recommendation model just slowly erodes user trust until people stop coming back — and by the time you notice, the damage is done. AI governance means building systems that fail loudly, not just systems that work.</p>
+        <div class="lesson-title">Silent failure is more dangerous than visible failure.</div>
+        <div class="lesson-body">A crashed system demands immediate attention. A quietly degrading recommendation model slowly erodes user trust until people stop coming back. By the time you notice, the damage is already done. AI governance means building systems that fail loudly, not just systems that seem to work.</div>
       </div>
     </div>
     <div class="lesson">
       <span class="lesson-num">03</span>
       <div class="lesson-text">
-        <strong>Personalization isn't a feature — it's a retention strategy.</strong>
-        <p>The users who drive recurring revenue aren't the casual ones who'd be fine with a Top 50 list. They're the passionate ones who will leave the moment the product stops understanding them. Building AI that serves individual taste at scale isn't a nice-to-have — it's the business model.</p>
+        <div class="lesson-title">Personalization is not a feature. It is a retention strategy.</div>
+        <div class="lesson-body">The users who drive recurring revenue are not the casual ones who would be fine with a Top 50 list. They are the passionate ones who will leave the moment the product stops understanding them. Building AI that serves individual taste at scale is not a nice-to-have. It is the business model.</div>
       </div>
     </div>
   </div>
@@ -784,16 +803,16 @@ footer strong{color:var(--muted);}
 
 <!-- DIVIDER -->
 <div class="divider">
-  <span class="divider-label">↓ Now try it yourself — the live recommendation engine</span>
+  <span class="divider-label">Try it yourself below · the live recommendation engine</span>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════
-     PART 2 — LIVE SYSTEM
+     PART 2. LIVE SYSTEM
 ═══════════════════════════════════════════════════════ -->
 <div id="system">
   <div class="system-header">
     <div class="system-header-left">
-      <div class="system-tag">Live Demo — Part 2</div>
+      <div class="system-tag">Live Demo · Part 2</div>
       <h2>Collaborative Filtering Engine</h2>
     </div>
     <div class="system-header-right">
@@ -808,7 +827,7 @@ footer strong{color:var(--muted);}
 
     <!-- LEFT: Catalog -->
     <div>
-      <div class="catalog-label">Song Catalog — rate each track</div>
+      <div class="catalog-label">Song Catalog. rate each track</div>
       <div class="catalog-list" id="catalogList"></div>
     </div>
 
@@ -863,7 +882,7 @@ footer strong{color:var(--muted);}
 <div id="playbar">
   <div class="pb-art" id="pbArt" style="background:#333">♪</div>
   <div class="pb-info">
-    <div id="pbTitle" class="pb-idle">Nothing playing — rate a song to begin</div>
+    <div id="pbTitle" class="pb-idle">Nothing playing yet</div>
     <div id="pbArtist" style="display:none" class="pb-artist"></div>
   </div>
   <div class="pb-controls">
@@ -884,7 +903,7 @@ footer strong{color:var(--muted);}
 
 <!-- FOOTER -->
 <footer>
-  <strong>MIS 432: AI in Business</strong> &nbsp;·&nbsp;
+  <strong>MIS 432: AI in Business</strong> &nbsp;&middot;&nbsp;
   Western Washington University, College of Business and Economics<br>
   Built from scratch using Python, pandas, scikit-learn, and vanilla JavaScript.<br>
   Recommendation engine uses cosine similarity collaborative filtering on 9 reference users × 15 songs.<br>
@@ -1071,7 +1090,7 @@ function stopPlayback(){
   nowPlaying=null;isPaused=false;
   document.getElementById('pbArt').style.background='#333';
   document.getElementById('pbArt').textContent='♪';
-  document.getElementById('pbTitle').textContent='Nothing playing — rate a song to begin';
+  document.getElementById('pbTitle').textContent='Nothing playing yet';
   document.getElementById('pbTitle').className='pb-idle';
   document.getElementById('pbArtist').style.display='none';
   document.getElementById('pbStop').style.display='none';
@@ -1236,9 +1255,9 @@ function openWrapped(){
         </div>
       </div>
       <div class="wsec"><div class="wlbl">Listener Persona</div>
-        <div class="wfun">You were in the <em>top ${topPct}%</em> of <em>${topArtist}</em> listeners this session — your replay rate puts you in rare company.</div>
+        <div class="wfun">You were in the <em>top ${topPct}%</em> of <em>${topArtist}</em> listeners this session . Your replay rate puts you in rare company.</div>
       </div>
-      <div class="wnote"><strong>ℹ️ This Wrapped was generated from the exact same data log that powered your recommendations above.</strong><br>Every skip (0.1), play (0.5), and replay (0.9) was used both to find your taste neighbors via cosine similarity and to compute this summary — no separate data collected.</div>
+      <div class="wnote"><strong>This Wrapped was generated from the exact same data log that powered your recommendations above.</strong> Every skip (0.1), play (0.5), and replay (0.9) was used both to find your taste neighbors via cosine similarity and to compute this summary. No separate data was collected.</div>
       <button class="wclose" onclick="closeWrapped()">Close Wrapped</button>
     </div>`;
   document.getElementById('woverlay').classList.add('vis');
